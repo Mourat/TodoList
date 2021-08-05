@@ -1,8 +1,8 @@
-import React from "react";
+import React, {ChangeEvent, KeyboardEvent, useState} from "react";
 import {filterType} from "./App";
 
 export type TaskType = {
-    id: number,
+    id: string,
     title: string,
     isDone: boolean,
 }
@@ -10,12 +10,17 @@ export type TaskType = {
 type PropsType = {
     title: string,
     tasks: Array<TaskType>,
-    removeTask: (taskID: number) => void
+    removeTask: (taskID: string) => void
     switchFilter: (value: filterType) => void
+    addTask: (title: string) => void
 }
 
-export const Todolist = ({title, tasks, removeTask, switchFilter}: PropsType) => {
+export const Todolist = ({title, tasks, removeTask, switchFilter, addTask}: PropsType) => {
 
+    // New task's title in local state
+    const [newTitle, setNewTitle] = useState("")
+
+    // Prepare tasks list
     const tasksJSX = tasks.map(t => {
         return (
             <li key={t.id}>
@@ -26,20 +31,36 @@ export const Todolist = ({title, tasks, removeTask, switchFilter}: PropsType) =>
         )
     })
 
+    // Send new task to global state in App component
+    const addNewTask = () => {
+        addTask(newTitle)
+        setNewTitle('')
+    }
+
+    // Filters
+    const showAllTasks = () => { switchFilter('all') }
+    const showActiveTasks = () => { switchFilter('active') }
+    const showCompletedTasks = () => { switchFilter('completed') }
+
+    // Copy characters from input to local state
+    const changeTitle = (e: ChangeEvent<HTMLInputElement>) => setNewTitle(e.currentTarget.value)
+    // Add new task on Enter
+    const onKeyPressAddTask = (e: KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") addNewTask()
+    }
+
     return (
         <div>
             <h3>{title}</h3>
             <div>
-                <input/>
-                <button>+</button>
+                <input onChange={changeTitle} onKeyPress={onKeyPressAddTask} value={newTitle}/>
+                <button onClick={addNewTask}>+</button>
             </div>
-            <ul>
-                {tasksJSX}
-            </ul>
+            <ul>{tasksJSX}</ul>
             <div>
-                <button onClick={() => switchFilter('all')}>All</button>
-                <button onClick={() => switchFilter('active')}>Active</button>
-                <button onClick={() => switchFilter('completed')}>Completed</button>
+                <button onClick={showAllTasks}>All</button>
+                <button onClick={showActiveTasks}>Active</button>
+                <button onClick={showCompletedTasks}>Completed</button>
             </div>
         </div>
     )
